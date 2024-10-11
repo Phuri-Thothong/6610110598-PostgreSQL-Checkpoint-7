@@ -67,7 +67,6 @@ def notes_edit(note_id):
     if form.validate_on_submit():
         note.title = form.title.data
         note.description = form.description.data
-        print("After update:", note.title, note.description)
         for tag_name in form.tags.data:
             tag = (
                 db.session.execute(db.select(models.Tag).where(models.Tag.name == tag_name))
@@ -97,9 +96,9 @@ def notes_delete(note_id):
     db = models.db
     note = db.session.get(models.Note, note_id)
     if note:
-        db.session.delete(note)  # ลบโน้ต
-        db.session.commit()       # บันทึกการเปลี่ยนแปลงในฐานข้อมูล
-    return flask.redirect(flask.url_for("index"))  # กลับไปยังหน้าหลัก
+        db.session.delete(note)
+        db.session.commit()
+    return flask.redirect(flask.url_for("index"))
 
 
 @app.route("/tags/<tag_name>")
@@ -119,6 +118,24 @@ def tags_view(tag_name):
         tag_name=tag_name,
         notes=notes,
     )
+
+
+# ลบ tag
+@app.route("/tags/delete/<int:tag_id>", methods=["POST"])
+def tags_delete(tag_id):
+    db = models.db
+    tag = db.session.execute(db.select(models.Tag).where(models.Tag.id == tag_id)).scalars().first()
+    if tag:
+        notes = (
+            db.session.execute(
+            db.select(models.Note).join(models.note_tag_m2m).where(models.note_tag_m2m.c.tag_id == tag_id)
+        ).scalars().fetchall()
+        )
+        for note in notes:
+            note.tags.remove(tag)
+        db.session.delete(tag)
+        db.session.commit()
+    return flask.redirect(flask.url_for("index"))
 
 
 if __name__ == "__main__":

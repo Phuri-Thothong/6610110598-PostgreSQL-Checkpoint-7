@@ -42,6 +42,28 @@
       Tags: 
       {% for t in note.tags %}
         <a href="{{ url_for('tags_view', tag_name=t.name) }}">{{ t.name }}</a>
+        <a href="#" class="btn btn-danger me-md-2" type="button" data-bs-toggle="modal" data-bs-target="#deleteTagModal{{ t.id }}">Delete Tag</a>
+        
+        <!-- Modal for confirming delete -->
+        <div class="modal fade" id="deleteTagModal{{ t.id }}" tabindex="-1" aria-labelledby="deleteTagModalLabel{{ t.id }}" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="deleteTagModalLabel{{ t.id }}">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                Are you sure you want to delete this tag?
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('tags_delete', tag_id=t.id) }}" method="POST" style="display: inline;">
+                  <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
     {% endfor %}
       <br>
       Last update: {{ note.updated_date }}
