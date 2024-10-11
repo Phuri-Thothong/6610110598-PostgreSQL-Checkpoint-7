@@ -91,6 +91,17 @@ def notes_edit(note_id):
     )
 
 
+# ลบโน้ต
+@app.route("/notes/delete/<int:note_id>", methods=["POST"])
+def notes_delete(note_id):
+    db = models.db
+    note = db.session.get(models.Note, note_id)
+    if note:
+        db.session.delete(note)  # ลบโน้ต
+        db.session.commit()       # บันทึกการเปลี่ยนแปลงในฐานข้อมูล
+    return flask.redirect(flask.url_for("index"))  # กลับไปยังหน้าหลัก
+
+
 @app.route("/tags/<tag_name>")
 def tags_view(tag_name):
     db = models.db
