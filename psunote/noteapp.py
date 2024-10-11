@@ -57,27 +57,23 @@ def notes_create():
 
     return flask.redirect(flask.url_for("index"))
 
-# แก้ไขโน้ต
-@app.route("/notes/edit/<note_id>", methods=["GET", "PUT"])
+# แก้ไขโน้ตและแท็ก
+@app.route("/notes/edit/<note_id>", methods=["GET", "POST"])
 def notes_edit(note_id):
-    form = forms.NoteForm()
-    if not form.validate_on_submit():
-        print("error", form.errors)
-        return flask.render_template(
-            "notes-edit.html",
-            form=form,
-        )
-    note = models.Note()
-    form.populate_obj(note)
-    note.tags = []
-
     db = models.db
-    for tag_name in form.tags.data:
-        tag = (
-            db.session.execute(db.select(models.Tag).where(models.Tag.name == tag_name))
-            .scalars()
-            .first()
-        )
+    note = db.session.get(models.Note, note_id)
+    form = forms.NoteForm(obj=note)
+    
+    if form.validate_on_submit():
+        note.title = form.title.data
+        note.description = form.description.data
+        print("After update:", note.title, note.description)
+        for tag_name in form.tags.data:
+            tag = (
+                db.session.execute(db.select(models.Tag).where(models.Tag.name == tag_name))
+                .scalars()
+                .first()
+            )
 
         if not tag:
             tag = models.Tag(name=tag_name)
@@ -85,10 +81,14 @@ def notes_edit(note_id):
 
         note.tags.append(tag)
 
-    db.session.add(note)
-    db.session.commit()
+        db.session.add(note)
+        db.session.commit()
+        return flask.redirect(flask.url_for("index"))
 
-    return flask.redirect(flask.url_for("index"))
+    return flask.render_template(
+        "notes-edit.html",
+        form=form,
+    )
 
 
 @app.route("/tags/<tag_name>")

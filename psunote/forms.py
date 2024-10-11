@@ -29,7 +29,7 @@ class TagListField(Field):
 
     def _value(self):
         if self.data:
-            return ", ".join(self.data)
+            return ", ".join([t.name if isinstance(t, models.Tag) else t for t in self.data])
         else:
             return ""
 
